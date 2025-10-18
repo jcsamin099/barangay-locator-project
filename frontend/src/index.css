@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* src/index.css */
+body { font-family: Inter, system-ui, sans-serif; margin: 0; }
