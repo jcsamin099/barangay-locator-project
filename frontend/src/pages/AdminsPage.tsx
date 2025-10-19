@@ -1,39 +1,39 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import {
-  getResidents,
-  addResident,
-  updateResident,
-  deleteResident,
-} from "../services/residentService";
+  getAdmins,
+  addAdmin,
+  updateAdmin,
+  deleteAdmin,
+} from "../services/adminService"; // ✅ Correct import
 
-const ResidentsPage = () => {
-  const [residents, setResidents] = useState([]);
+const AdminsPage = () => {
+  const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
-  // 🔹 Fetch all residents
-  const fetchResidents = async () => {
+  // 🔹 Fetch only admins
+  const fetchAdmins = async () => {
     try {
-      const data = await getResidents(token);
-      setResidents(data);
+      const data = await getAdmins(token); // ✅ from adminService
+      setAdmins(data);
     } catch (error) {
-      console.error("Error fetching residents:", error);
-      Swal.fire("Error", "Failed to load residents.", "error");
+      console.error("Error fetching admins:", error);
+      Swal.fire("Error", "Failed to load admin users.", "error");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchResidents();
+    fetchAdmins();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ➕ Add Resident
-  const handleAddResident = async () => {
+  // ➕ Add Admin
+  const handleAddAdmin = async () => {
     const { value: formValues } = await Swal.fire({
-      title: "Add New Resident",
+      title: "Add New Admin",
       html: `
         <input id="swal-name" class="swal2-input" placeholder="Full Name" />
         <input id="swal-email" class="swal2-input" placeholder="Email" />
@@ -41,7 +41,7 @@ const ResidentsPage = () => {
       `,
       focusConfirm: false,
       showCancelButton: true,
-      confirmButtonText: "Add Resident",
+      confirmButtonText: "Add Admin",
       preConfirm: () => {
         const name = document.getElementById("swal-name").value.trim();
         const email = document.getElementById("swal-email").value.trim();
@@ -51,34 +51,33 @@ const ResidentsPage = () => {
           Swal.showValidationMessage("All fields are required!");
           return false;
         }
-
         return { name, email, password };
       },
     });
 
     if (formValues) {
       try {
-        await addResident(token, formValues);
-        Swal.fire("Added!", "New resident has been created.", "success");
-        fetchResidents();
+        await addAdmin(token, formValues); // ✅ from adminService
+        Swal.fire("Added!", "New admin has been created.", "success");
+        fetchAdmins();
       } catch (error) {
-        console.error("Error adding resident:", error);
+        console.error("Error adding admin:", error);
         Swal.fire(
           "Error",
-          error.response?.data?.message || "Failed to add resident.",
+          error.response?.data?.message || "Failed to add admin.",
           "error"
         );
       }
     }
   };
 
-  // ✏️ Edit Resident (with password confirmation)
-  const handleEdit = async (resident) => {
+  // ✏️ Edit Admin Info
+  const handleEdit = async (admin) => {
     const { value: formValues } = await Swal.fire({
-      title: "Edit Resident Info",
+      title: "Edit Admin Info",
       html: `
-        <input id="swal-name" class="swal2-input" value="${resident.name}" placeholder="Full Name" />
-        <input id="swal-email" class="swal2-input" value="${resident.email}" placeholder="Email" />
+        <input id="swal-name" class="swal2-input" value="${admin.name}" placeholder="Full Name" />
+        <input id="swal-email" class="swal2-input" value="${admin.email}" placeholder="Email" />
         <input id="swal-password" type="password" class="swal2-input" placeholder="New Password (optional)" />
         <input id="swal-confirm" type="password" class="swal2-input" placeholder="Confirm New Password" />
       `,
@@ -107,25 +106,25 @@ const ResidentsPage = () => {
 
     if (formValues) {
       try {
-        await updateResident(token, resident._id, formValues);
-        Swal.fire("Updated!", "Resident info has been updated.", "success");
-        fetchResidents();
+        await updateAdmin(token, admin._id, formValues); // ✅ from adminService
+        Swal.fire("Updated!", "Admin info has been updated.", "success");
+        fetchAdmins();
       } catch (error) {
-        console.error("Error updating resident:", error);
+        console.error("Error updating admin:", error);
         Swal.fire(
           "Error",
-          error.response?.data?.message || "Failed to update resident.",
+          error.response?.data?.message || "Failed to update admin.",
           "error"
         );
       }
     }
   };
 
-  // 🗑️ Delete Resident
+  // 🗑️ Delete Admin
   const handleDelete = async (id) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
-      text: "This resident account will be permanently deleted.",
+      text: "This admin account will be permanently deleted.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: "Yes, delete it",
@@ -136,14 +135,14 @@ const ResidentsPage = () => {
 
     if (confirm.isConfirmed) {
       try {
-        await deleteResident(token, id);
-        Swal.fire("Deleted!", "Resident has been deleted.", "success");
-        fetchResidents();
+        await deleteAdmin(token, id); // ✅ from adminService
+        Swal.fire("Deleted!", "Admin has been deleted.", "success");
+        fetchAdmins();
       } catch (error) {
-        console.error("Error deleting resident:", error);
+        console.error("Error deleting admin:", error);
         Swal.fire(
           "Error",
-          error.response?.data?.message || "Failed to delete resident.",
+          error.response?.data?.message || "Failed to delete admin.",
           "error"
         );
       }
@@ -153,61 +152,45 @@ const ResidentsPage = () => {
   return (
     <div className="p-6 bg-white rounded-xl shadow-md">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">
-          🏘️ Residents Management
-        </h2>
+        <h2 className="text-2xl font-bold text-gray-800">🧑‍💼 Admins Management</h2>
         <button
-          onClick={handleAddResident}
+          onClick={handleAddAdmin}
           className="bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          ➕ Add Resident
+          ➕ Add Admin
         </button>
       </div>
 
       {loading ? (
-        <p>Loading residents...</p>
-      ) : residents.length === 0 ? (
-        <p>No residents found.</p>
+        <p>Loading admins...</p>
+      ) : admins.length === 0 ? (
+        <p>No admins found.</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full border-collapse border border-gray-200">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border border-gray-200 px-4 py-2 text-left">
-                  Name
-                </th>
-                <th className="border border-gray-200 px-4 py-2 text-left">
-                  Email
-                </th>
-                <th className="border border-gray-200 px-4 py-2 text-left">
-                  Role
-                </th>
-                <th className="border border-gray-200 px-4 py-2 text-center">
-                  Actions
-                </th>
+                <th className="border border-gray-200 px-4 py-2 text-left">Name</th>
+                <th className="border border-gray-200 px-4 py-2 text-left">Email</th>
+                <th className="border border-gray-200 px-4 py-2 text-left">Role</th>
+                <th className="border border-gray-200 px-4 py-2 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {residents.map((resident) => (
-                <tr key={resident._id} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2">
-                    {resident.name}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2">
-                    {resident.email}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 capitalize">
-                    {resident.role}
-                  </td>
+              {admins.map((admin) => (
+                <tr key={admin._id} className="hover:bg-gray-50">
+                  <td className="border border-gray-200 px-4 py-2">{admin.name}</td>
+                  <td className="border border-gray-200 px-4 py-2">{admin.email}</td>
+                  <td className="border border-gray-200 px-4 py-2 capitalize">{admin.role}</td>
                   <td className="border border-gray-200 px-4 py-2 text-center">
                     <button
-                      onClick={() => handleEdit(resident)}
+                      onClick={() => handleEdit(admin)}
                       className="text-blue-500 cursor-pointer hover:text-blue-700 mx-2"
                     >
                       ✏️
                     </button>
                     <button
-                      onClick={() => handleDelete(resident._id)}
+                      onClick={() => handleDelete(admin._id)}
                       className="text-red-500 cursor-pointer hover:text-red-700 mx-2"
                     >
                       🗑️
@@ -223,4 +206,4 @@ const ResidentsPage = () => {
   );
 };
 
-export default ResidentsPage;
+export default AdminsPage;

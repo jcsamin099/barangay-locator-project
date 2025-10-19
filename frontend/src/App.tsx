@@ -7,6 +7,7 @@ import ResidentsPage from "./pages/ResidentsPage";
 import BarangaysPage from "./pages/BarangaysPage";
 import DashboardCard from "./components/DashboardCard";
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminsPage from "./pages/AdminsPage"; // 🧩 NEW IMPORT
 
 function App() {
   return (
@@ -17,21 +18,21 @@ function App() {
 
       {/* Admin layout route */}
       <Route
-  path="/admin/*"
-  element={
-    <ProtectedRoute requiredRole="admin">
-      <AdminDashboard />
-    </ProtectedRoute>
-  }
->
-  {/* default (index) route for /admin */}
-  <Route index element={<DashboardCard />} />
-  {/* explicit route for /admin/dashboard */}
-  <Route path="dashboard" element={<DashboardCard />} />
-  <Route path="residents" element={<ResidentsPage />} />
-  <Route path="barangays" element={<BarangaysPage />} />
-</Route>
-
+        path="/admin/*"
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      >
+        {/* default (index) route for /admin */}
+        <Route index element={<DashboardCard />} />
+        {/* explicit route for /admin/dashboard */}
+        <Route path="dashboard" element={<DashboardCard />} />
+        <Route path="residents" element={<ResidentsPage />} />
+        <Route path="barangays" element={<BarangaysPage />} />
+        <Route path="admins" element={<AdminsPage />} /> {/* 🧩 NEW ROUTE */}
+      </Route>
 
       <Route path="*" element={<div className="p-6">Not Found</div>} />
     </Routes>

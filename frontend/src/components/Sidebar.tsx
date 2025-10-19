@@ -1,6 +1,6 @@
 // src/components/Sidebar.tsx
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, MapPin, LogOut } from "lucide-react";
+import { Home, Users, MapPin, LogOut, Shield } from "lucide-react";
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -29,6 +29,18 @@ const Sidebar = () => {
         >
           <Home className="w-5 h-5" />
           <span>Dashboard</span>
+        </Link>
+
+        
+        {/* 🛡️ New Admins Link */}
+        <Link
+          to="/admin/admins"
+          className={`flex items-center gap-3 w-full p-3 rounded-lg hover:bg-gray-700 transition ${isActive(
+            "/admin/admins"
+          )}`}
+        >
+          <Shield className="w-5 h-5" />
+          <span>Admins</span>
         </Link>
 
         <Link

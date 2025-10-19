@@ -2,31 +2,36 @@ import express from "express";
 import {
   registerUser,
   loginUser,
-  updateUser,
+  logoutUser,
   getAllUsers,
   getUserById,
   deleteUser,
+  updateUser,
   getAllResidents,
+  getAllAdmins, // 👈 added this
   updateResident,
   deleteResident,
 } from "../controllers/userController.js";
-import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// 🧑‍💻 Auth
+// 🧍 Auth routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/logout", logoutUser); // 👈 new endpoint
 
-// 👤 User management
-router.put("/update/:id", protect, updateUser);
-router.get("/", protect, getAllUsers);
-router.get("/:id", protect, getUserById);
-router.delete("/:id", protect, adminOnly, deleteUser);
+// 👥 Users
+router.get("/", getAllUsers);
+router.get("/:id", getUserById);
+router.put("/:id", updateUser);
+router.delete("/:id", deleteUser);
 
-// 🏘️ Residents (Admin only)
-router.get("/admin/residents", protect, adminOnly, getAllResidents);
-router.put("/admin/residents/:id", protect, adminOnly, updateResident);
-router.delete("/admin/residents/:id", protect, adminOnly, deleteResident);
+// 🏘 Residents
+router.get("/role/residents", getAllResidents);
+router.put("/residents/:id", updateResident);
+router.delete("/residents/:id", deleteResident);
+
+// 👨‍💼 Admins
+router.get("/role/admins", getAllAdmins); // 👈 new route
 
 export default router;

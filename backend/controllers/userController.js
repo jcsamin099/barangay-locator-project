@@ -25,6 +25,7 @@ export const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role: role || "resident",
+      status: "offline",
     });
 
     await newUser.save();
@@ -36,6 +37,7 @@ export const registerUser = async (req, res) => {
         name: newUser.name,
         email: newUser.email,
         role: newUser.role,
+        status: newUser.status,
       },
     });
   } catch (error) {
@@ -56,6 +58,10 @@ export const loginUser = async (req, res) => {
     if (!isMatch)
       return res.status(400).json({ message: "Invalid email or password" });
 
+    // ✅ Set user online
+    user.status = "online";
+    await user.save();
+
     const token = generateToken(user._id, user.role);
 
     res.status(200).json({
@@ -66,8 +72,25 @@ export const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        status: user.status,
       },
     });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 🚪 Logout User (set offline)
+export const logoutUser = async (req, res) => {
+  try {
+    const { id } = req.body; // expects userId
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.status = "offline";
+    await user.save();
+
+    res.status(200).json({ message: "User logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -97,6 +120,7 @@ export const updateUser = async (req, res) => {
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        status: updatedUser.status,
       },
     });
   } catch (error) {
@@ -155,28 +179,39 @@ export const getAllResidents = async (req, res) => {
   }
 };
 
+// 👨‍💼 Get All Admins (Admin only)
+export const getAllAdmins = async (req, res) => {
+  try {
+    const admins = await User.find({ role: "admin" }).select("-password");
+    res.status(200).json(admins);
+  } catch (error) {
+    console.error("Error fetching admins:", error);
+    res.status(500).json({ message: "Error fetching admins" });
+  }
+};
+
 // 🧾 Update Resident Info (Admin only)
 export const updateResident = async (req, res) => {
   const { id } = req.params;
   const { name, email } = req.body;
 
-  try {
-    const resident = await User.findById(id);
-    if (!resident)
-      return res.status(404).json({ message: "Resident not found" });
+    try {
+      const resident = await User.findById(id);
+      if (!resident)
+        return res.status(404).json({ message: "Resident not found" });
 
-    resident.name = name || resident.name;
-    resident.email = email || resident.email;
+      resident.name = name || resident.name;
+      resident.email = email || resident.email;
 
-    const updatedResident = await resident.save();
-    res.json({
-      message: "Resident updated successfully",
-      resident: updatedResident,
-    });
-  } catch (error) {
-    console.error("Error updating resident:", error);
-    res.status(500).json({ message: "Error updating resident" });
-  }
+      const updatedResident = await resident.save();
+      res.json({
+        message: "Resident updated successfully",
+        resident: updatedResident,
+      });
+    } catch (error) {
+      console.error("Error updating resident:", error);
+      res.status(500).json({ message: "Error updating resident" });
+    }
 };
 
 // ❌ Delete Resident (Admin only)
