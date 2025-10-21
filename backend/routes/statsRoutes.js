@@ -4,49 +4,43 @@ import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-/**
- * @desc    Get dashboard stats
- * @route   GET /api/stats
- * @access  Private
- */
+// ✅ Get dashboard statistics
 router.get("/", protect, async (req, res) => {
   try {
-    // Count total users by role
     const totalResidents = await User.countDocuments({ role: "resident" });
     const totalAdmins = await User.countDocuments({ role: "admin" });
 
-    // Count online users by role
     const onlineResidents = await User.countDocuments({
       role: "resident",
-      isOnline: true,
+      status: "online",
     });
     const onlineAdmins = await User.countDocuments({
       role: "admin",
-      isOnline: true,
+      status: "online",
     });
 
-    // Include current logged-in user details
-    const currentUser = req.user
-      ? {
-          id: req.user._id,
-          name: req.user.name,
-          email: req.user.email,
-          role: req.user.role,
-          isOnline: req.user.isOnline,
-        }
-      : null;
+    const currentUser = await User.findById(req.user._id);
+    if (currentUser && currentUser.status !== "online") {
+      currentUser.status = "online";
+      await currentUser.save();
+    }
 
-    // Send stats as JSON
     res.json({
       totalResidents,
       totalAdmins,
       onlineResidents,
       onlineAdmins,
-      currentUser,
+      currentUser: {
+        id: currentUser._id,
+        name: currentUser.name,
+        email: currentUser.email,
+        role: currentUser.role,
+        status: currentUser.status,
+      },
     });
   } catch (error) {
-    console.error("Error fetching stats:", error.message);
-    res.status(500).json({ message: "Server error fetching stats" });
+    console.error("Stats Error:", error.message);
+    res.status(500).json({ message: "Error fetching stats" });
   }
 });
 

@@ -1,77 +1,92 @@
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import dotenv from "dotenv";
 
-// Generate JWT
+dotenv.config();
+
+// Generate JWT token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 };
 
-// REGISTER
+// ✅ REGISTER USER
 export const registerUser = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
+  const { name, email, password, role } = req.body;
 
-    const userExists = await User.findOne({ email });
-    if (userExists) return res.status(400).json({ message: "User already exists" });
+  try {
+    const existingUser = await User.findOne({ email });
+    if (existingUser)
+      return res.status(400).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
+    const newUser = await User.create({
       name,
       email,
       password: hashedPassword,
-      role: role || "resident",
-      online: false,
+      role,
+      status: "offline",
     });
 
-    res.status(201).json({ message: "User registered successfully" });
+    res.status(201).json({
+      _id: newUser._id,
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role,
+      status: newUser.status,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Register Error:", error.message);
+    res.status(500).json({ message: "Server error during registration" });
   }
 };
 
-// LOGIN
+// ✅ LOGIN USER
 export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
+  const { email, password } = req.body;
 
+  try {
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) return res.status(400).json({ message: "User not found" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+    if (!isMatch) return res.status(400).json({ message: "Invalid password" });
 
-    // ✅ Mark user as online
-    user.online = true;
-    await user.save();
+    // Update status to online (only if not already)
+    if (user.status !== "online") {
+      user.status = "online";
+      await user.save();
+    }
 
-    const token = generateToken(user._id);
-
+    // Return updated user info
     res.json({
       _id: user._id,
       name: user.name,
       email: user.email,
       role: user.role,
-      token,
+      status: user.status, // ✅ will now be "online"
+      token: generateToken(user._id),
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Login Error:", error.message);
+    res.status(500).json({ message: "Server error during login" });
   }
 };
 
-// LOGOUT
+// ✅ LOGOUT USER
 export const logoutUser = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
+
     if (user) {
-      user.online = false; // ✅ mark offline
+      user.status = "offline";
       await user.save();
-      res.json({ message: "Logged out successfully" });
-    } else {
-      res.status(404).json({ message: "User not found" });
     }
+
+    res.json({ message: "Logged out successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Logout Error:", error.message);
+    res.status(500).json({ message: "Server error during logout" });
   }
 };
