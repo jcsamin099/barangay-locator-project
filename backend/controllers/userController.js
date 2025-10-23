@@ -1,102 +1,7 @@
 import User from "../models/userModel.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 
-// 🔑 Generate JWT
-const generateToken = (id, role) => {
-  return jwt.sign({ id, role }, process.env.JWT_SECRET || "default_secret_key", {
-    expiresIn: "30d",
-  });
-};
-
-//  Register User
-export const registerUser = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
-
-    const existingUser = await User.findOne({ email });
-    if (existingUser)
-      return res.status(400).json({ message: "User already exists" });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newUser = new User({
-      name,
-      email,
-      password: hashedPassword,
-      role: role || "resident",
-      status: "offline",
-    });
-
-    await newUser.save();
-
-    res.status(201).json({
-      message: "User registered successfully",
-      user: {
-        _id: newUser._id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        status: newUser.status,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// 🔐 Login User
-export const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user)
-      return res.status(400).json({ message: "Invalid email or password" });
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch)
-      return res.status(400).json({ message: "Invalid email or password" });
-
-    // ✅ Set user online
-    user.status = "online";
-    await user.save();
-
-    const token = generateToken(user._id, user.role);
-
-    res.status(200).json({
-      message: "Login successful",
-      token,
-      user: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status,
-      },
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// 🚪 Logout User (set offline)
-export const logoutUser = async (req, res) => {
-  try {
-    const { id } = req.body; // expects userId
-    const user = await User.findById(id);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    user.status = "offline";
-    await user.save();
-
-    res.status(200).json({ message: "User logged out successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// ✏️ Update User Info
+/* ✏️ UPDATE USER (Admin can update any user) */
 export const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
@@ -105,16 +10,14 @@ export const updateUser = async (req, res) => {
     const user = await User.findById(id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (name) user.name = name;
-    if (email) user.email = email;
-    if (password) {
+    if (name && name.trim() !== "") user.name = name.trim();
+    if (email && email.trim() !== "") user.email = email.trim();
+    if (password && password.trim() !== "")
       user.password = await bcrypt.hash(password, 10);
-    }
 
     const updatedUser = await user.save();
 
     res.status(200).json({
-      message: "User updated successfully",
       user: {
         _id: updatedUser._id,
         name: updatedUser.name,
@@ -124,109 +27,78 @@ export const updateUser = async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Update User Error:", error.message);
+    res.status(500).json({ message: "Error updating user" });
   }
 };
 
-// 👥 Get All Users
+/* 👤 UPDATE OWN PROFILE (Admin self-account update) */
+export const updateOwnProfile = async (req, res) => {
+  try {
+    const userId = req.user._id; // ✅ safer (ensure compatibility)
+    const { name, email, password } = req.body;
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (name && name.trim() !== "") user.name = name.trim();
+    if (email && email.trim() !== "") user.email = email.trim();
+    if (password && password.trim() !== "")
+      user.password = await bcrypt.hash(password, 10);
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      user: {
+        _id: updatedUser._id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        role: updatedUser.role,
+        status: updatedUser.status,
+      },
+      message: "Profile updated successfully",
+    });
+  } catch (error) {
+    console.error("Update Own Profile Error:", error.message);
+    res.status(500).json({ message: "Error updating profile" });
+  }
+};
+
+/* 👥 GET ALL USERS */
 export const getAllUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
     res.status(200).json(users);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get Users Error:", error.message);
+    res.status(500).json({ message: "Error fetching users" });
   }
 };
 
-// 👤 Get User by ID
+/* 👤 GET USER BY ID */
 export const getUserById = async (req, res) => {
   try {
     const { id } = req.params;
-
     const user = await User.findById(id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
-
     res.status(200).json(user);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("Get User By ID Error:", error.message);
+    res.status(500).json({ message: "Error fetching user" });
   }
 };
 
-// 🗑️ Delete User (Admin only)
+/* 🗑️ DELETE USER */
 export const deleteUser = async (req, res) => {
   try {
     const { id } = req.params;
-
     const user = await User.findById(id);
-    if (!user)
-      return res.status(404).json({ message: "User not found" });
+    if (!user) return res.status(404).json({ message: "User not found" });
 
     await user.deleteOne();
     res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// 🏘️ Get All Residents (Admin only)
-export const getAllResidents = async (req, res) => {
-  try {
-    const residents = await User.find({ role: "resident" }).select("-password");
-    res.status(200).json(residents);
-  } catch (error) {
-    console.error("Error fetching residents:", error);
-    res.status(500).json({ message: "Error fetching residents" });
-  }
-};
-
-// 👨‍💼 Get All Admins (Admin only)
-export const getAllAdmins = async (req, res) => {
-  try {
-    const admins = await User.find({ role: "admin" }).select("-password");
-    res.status(200).json(admins);
-  } catch (error) {
-    console.error("Error fetching admins:", error);
-    res.status(500).json({ message: "Error fetching admins" });
-  }
-};
-
-// 🧾 Update Resident Info (Admin only)
-export const updateResident = async (req, res) => {
-  const { id } = req.params;
-  const { name, email } = req.body;
-
-    try {
-      const resident = await User.findById(id);
-      if (!resident)
-        return res.status(404).json({ message: "Resident not found" });
-
-      resident.name = name || resident.name;
-      resident.email = email || resident.email;
-
-      const updatedResident = await resident.save();
-      res.json({
-        message: "Resident updated successfully",
-        resident: updatedResident,
-      });
-    } catch (error) {
-      console.error("Error updating resident:", error);
-      res.status(500).json({ message: "Error updating resident" });
-    }
-};
-
-// ❌ Delete Resident (Admin only)
-export const deleteResident = async (req, res) => {
-  const { id } = req.params;
-
-  try {
-    const resident = await User.findById(id);
-    if (!resident)
-      return res.status(404).json({ message: "Resident not found" });
-
-    await resident.deleteOne();
-    res.json({ message: "Resident deleted successfully" });
-  } catch (error) {
-    console.error("Error deleting resident:", error);
-    res.status(500).json({ message: "Error deleting resident" });
+    console.error("Delete User Error:", error.message);
+    res.status(500).json({ message: "Error deleting user" });
   }
 };

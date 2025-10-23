@@ -9,6 +9,8 @@ import {
 
 const ResidentsPage = () => {
   const [residents, setResidents] = useState([]);
+  const [filteredResidents, setFilteredResidents] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
@@ -16,7 +18,9 @@ const ResidentsPage = () => {
   const fetchResidents = async () => {
     try {
       const data = await getResidents(token);
-      setResidents(data);
+      const residentUsers = data.filter((res) => res.role === "resident");
+      setResidents(residentUsers);
+      setFilteredResidents(residentUsers);
     } catch (error) {
       console.error("Error fetching residents:", error);
       Swal.fire("Error", "Failed to load residents.", "error");
@@ -27,8 +31,17 @@ const ResidentsPage = () => {
 
   useEffect(() => {
     fetchResidents();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 🔍 Search Filter
+  useEffect(() => {
+    const filtered = residents.filter(
+      (r) =>
+        r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        r.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredResidents(filtered);
+  }, [searchQuery, residents]);
 
   // ➕ Add Resident
   const handleAddResident = async () => {
@@ -72,7 +85,7 @@ const ResidentsPage = () => {
     }
   };
 
-  // ✏️ Edit Resident (with password confirmation)
+  // ✏️ Edit Resident (name, email, password)
   const handleEdit = async (resident) => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Resident Info",
@@ -91,17 +104,16 @@ const ResidentsPage = () => {
         const password = document.getElementById("swal-password").value.trim();
         const confirm = document.getElementById("swal-confirm").value.trim();
 
-        if (!name || !email) {
-          Swal.showValidationMessage("Name and Email are required!");
-          return false;
-        }
-
         if (password && password !== confirm) {
           Swal.showValidationMessage("Passwords do not match!");
           return false;
         }
 
-        return { name, email, password };
+        return {
+          name: name || resident.name,
+          email: email || resident.email,
+          password: password || "",
+        };
       },
     });
 
@@ -164,9 +176,20 @@ const ResidentsPage = () => {
         </button>
       </div>
 
+      {/* 🔍 Search Bar */}
+      <div className="mb-4 flex justify-between items-center">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {loading ? (
         <p>Loading residents...</p>
-      ) : residents.length === 0 ? (
+      ) : filteredResidents.length === 0 ? (
         <p>No residents found.</p>
       ) : (
         <div className="overflow-x-auto">
@@ -188,7 +211,7 @@ const ResidentsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {residents.map((resident) => (
+              {filteredResidents.map((resident) => (
                 <tr key={resident._id} className="hover:bg-gray-50">
                   <td className="border border-gray-200 px-4 py-2">
                     {resident.name}

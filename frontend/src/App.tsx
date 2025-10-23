@@ -7,16 +7,18 @@ import ResidentsPage from "./pages/ResidentsPage";
 import BarangaysPage from "./pages/BarangaysPage";
 import DashboardCard from "./components/DashboardCard";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AdminsPage from "./pages/AdminsPage"; // 🧩 NEW IMPORT
+import AdminsPage from "./pages/AdminsPage";
+import AdminAccountPage from "./pages/AdminAccountPage"; // 🧩 NEW IMPORT
 
 function App() {
   return (
     <Routes>
+      {/* 🔹 Public Routes */}
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Admin layout route */}
+      {/* 🔒 Protected Admin Routes */}
       <Route
         path="/admin/*"
         element={
@@ -25,15 +27,16 @@ function App() {
           </ProtectedRoute>
         }
       >
-        {/* default (index) route for /admin */}
+        {/* 🏠 Default (index) route for /admin */}
         <Route index element={<DashboardCard />} />
-        {/* explicit route for /admin/dashboard */}
         <Route path="dashboard" element={<DashboardCard />} />
         <Route path="residents" element={<ResidentsPage />} />
         <Route path="barangays" element={<BarangaysPage />} />
-        <Route path="admins" element={<AdminsPage />} /> {/* 🧩 NEW ROUTE */}
+        <Route path="admins" element={<AdminsPage />} />
+        <Route path="account" element={<AdminAccountPage />} /> {/* 🧩 NEW ROUTE */}
       </Route>
 
+      {/* 🚫 Fallback for undefined paths */}
       <Route path="*" element={<div className="p-6">Not Found</div>} />
     </Routes>
   );

@@ -1,6 +1,6 @@
 // src/components/Sidebar.tsx
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, MapPin, LogOut, Shield } from "lucide-react";
+import { Home, Users, MapPin, LogOut, Shield, UserCog } from "lucide-react"; // 🧩 Added UserCog icon
 import axios from "axios";
 
 const Sidebar = () => {
@@ -38,10 +38,12 @@ const Sidebar = () => {
 
   return (
     <div className="fixed top-0 left-0 h-full w-64 bg-[#0f1e3a] text-white flex flex-col">
+      {/* 🔹 Sidebar Header */}
       <div className="p-6 border-b border-gray-700">
         <h2 className="text-2xl font-bold">Admin Panel</h2>
       </div>
 
+      {/* 🔹 Navigation Links */}
       <nav className="flex-1 p-4 space-y-3">
         <Link
           to="/admin/dashboard"
@@ -53,7 +55,6 @@ const Sidebar = () => {
           <span>Dashboard</span>
         </Link>
 
-        {/* 🛡️ Admins Link */}
         <Link
           to="/admin/admins"
           className={`flex items-center gap-3 w-full p-3 rounded-lg hover:bg-gray-700 transition ${isActive(
@@ -83,8 +84,20 @@ const Sidebar = () => {
           <MapPin className="w-5 h-5" />
           <span>Barangays</span>
         </Link>
+
+        {/* 🧑‍💼 Account Link */}
+        <Link
+          to="/admin/account"
+          className={`flex items-center gap-3 w-full p-3 rounded-lg hover:bg-gray-700 transition ${isActive(
+            "/admin/account"
+          )}`}
+        >
+          <UserCog className="w-5 h-5" />
+          <span>Account</span>
+        </Link>
       </nav>
 
+      {/* 🔹 Logout Button */}
       <div className="p-4 border-t border-gray-700">
         <button
           onClick={handleLogout}

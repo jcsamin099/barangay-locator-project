@@ -5,21 +5,25 @@ import {
   addAdmin,
   updateAdmin,
   deleteAdmin,
-} from "../services/adminService"; // ✅ Correct import
+} from "../services/adminService";
 
-const AdminsPage = () => {
+const AdminPage = () => {
   const [admins, setAdmins] = useState([]);
+  const [filteredAdmins, setFilteredAdmins] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
-  // 🔹 Fetch only admins
+  // 🔹 Fetch all admins
   const fetchAdmins = async () => {
     try {
-      const data = await getAdmins(token); // ✅ from adminService
-      setAdmins(data);
+      const data = await getAdmins(token);
+      const adminUsers = data.filter((user) => user.role === "admin");
+      setAdmins(adminUsers);
+      setFilteredAdmins(adminUsers);
     } catch (error) {
       console.error("Error fetching admins:", error);
-      Swal.fire("Error", "Failed to load admin users.", "error");
+      Swal.fire("Error", "Failed to load admins.", "error");
     } finally {
       setLoading(false);
     }
@@ -29,6 +33,16 @@ const AdminsPage = () => {
     fetchAdmins();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 🔍 Search filter
+  useEffect(() => {
+    const filtered = admins.filter(
+      (a) =>
+        a.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        a.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredAdmins(filtered);
+  }, [searchQuery, admins]);
 
   // ➕ Add Admin
   const handleAddAdmin = async () => {
@@ -51,13 +65,14 @@ const AdminsPage = () => {
           Swal.showValidationMessage("All fields are required!");
           return false;
         }
+
         return { name, email, password };
       },
     });
 
     if (formValues) {
       try {
-        await addAdmin(token, formValues); // ✅ from adminService
+        await addAdmin(token, formValues);
         Swal.fire("Added!", "New admin has been created.", "success");
         fetchAdmins();
       } catch (error) {
@@ -71,7 +86,7 @@ const AdminsPage = () => {
     }
   };
 
-  // ✏️ Edit Admin Info
+  // ✏️ Edit Admin
   const handleEdit = async (admin) => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Admin Info",
@@ -106,7 +121,7 @@ const AdminsPage = () => {
 
     if (formValues) {
       try {
-        await updateAdmin(token, admin._id, formValues); // ✅ from adminService
+        await updateAdmin(token, admin._id, formValues);
         Swal.fire("Updated!", "Admin info has been updated.", "success");
         fetchAdmins();
       } catch (error) {
@@ -135,7 +150,7 @@ const AdminsPage = () => {
 
     if (confirm.isConfirmed) {
       try {
-        await deleteAdmin(token, id); // ✅ from adminService
+        await deleteAdmin(token, id);
         Swal.fire("Deleted!", "Admin has been deleted.", "success");
         fetchAdmins();
       } catch (error) {
@@ -152,7 +167,7 @@ const AdminsPage = () => {
   return (
     <div className="p-6 bg-white rounded-xl shadow-md">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">🧑‍💼 Admins Management</h2>
+        <h2 className="text-2xl font-bold text-gray-800">🧑‍💼 Admin Management</h2>
         <button
           onClick={handleAddAdmin}
           className="bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
@@ -161,9 +176,20 @@ const AdminsPage = () => {
         </button>
       </div>
 
+      {/* 🔍 Modern Styled Search Bar (same as ResidentsPage) */}
+      <div className="mb-4 flex justify-between items-center">
+        <input
+          type="text"
+          placeholder="Search by name or email..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+      </div>
+
       {loading ? (
         <p>Loading admins...</p>
-      ) : admins.length === 0 ? (
+      ) : filteredAdmins.length === 0 ? (
         <p>No admins found.</p>
       ) : (
         <div className="overflow-x-auto">
@@ -177,11 +203,13 @@ const AdminsPage = () => {
               </tr>
             </thead>
             <tbody>
-              {admins.map((admin) => (
+              {filteredAdmins.map((admin) => (
                 <tr key={admin._id} className="hover:bg-gray-50">
                   <td className="border border-gray-200 px-4 py-2">{admin.name}</td>
                   <td className="border border-gray-200 px-4 py-2">{admin.email}</td>
-                  <td className="border border-gray-200 px-4 py-2 capitalize">{admin.role}</td>
+                  <td className="border border-gray-200 px-4 py-2 capitalize">
+                    {admin.role}
+                  </td>
                   <td className="border border-gray-200 px-4 py-2 text-center">
                     <button
                       onClick={() => handleEdit(admin)}
@@ -206,4 +234,4 @@ const AdminsPage = () => {
   );
 };
 
-export default AdminsPage;
+export default AdminPage;

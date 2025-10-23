@@ -4,8 +4,8 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-// Verify token middleware
-export const protect = async (req, res, next) => {
+// ✅ Verify token middleware
+export const verifyToken = async (req, res, next) => {
   let token;
 
   if (
@@ -17,8 +17,14 @@ export const protect = async (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       req.user = await User.findById(decoded.id).select("-password");
+
+      if (!req.user) {
+        return res.status(401).json({ message: "User not found" });
+      }
+
       return next();
     } catch (error) {
+      console.error("JWT verification failed:", error.message);
       return res.status(401).json({ message: "Not authorized, token failed" });
     }
   }
@@ -28,10 +34,13 @@ export const protect = async (req, res, next) => {
   }
 };
 
-// Restrict to admin only
+// ✅ Restrict to admin only
 export const adminOnly = (req, res, next) => {
   if (req.user && req.user.role === "admin") {
     return next();
   }
   return res.status(403).json({ message: "Access denied, admin only" });
 };
+
+// ✅ Backward compatibility (so 'protect' still works)
+export const protect = verifyToken;

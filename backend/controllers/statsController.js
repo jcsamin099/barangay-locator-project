@@ -1,24 +1,17 @@
+import express from "express";
 import User from "../models/userModel.js";
-import jwt from "jsonwebtoken";
+import { protect } from "../middleware/authMiddleware.js";
 
-export const getStats = async (req, res) => {
+const router = express.Router();
+
+// ✅ Get dashboard statistics
+router.get("/", protect, async (req, res) => {
   try {
-    // ✅ Verify token to get current user
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "No token provided" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || "default_secret_key");
-
-    const currentUser = await User.findById(decoded.id).select("-password");
-
-    // ✅ Count totals
+    // Get totals
     const totalResidents = await User.countDocuments({ role: "resident" });
     const totalAdmins = await User.countDocuments({ role: "admin" });
 
-    // ✅ Count online users
+    // Get online counts
     const onlineResidents = await User.countDocuments({
       role: "resident",
       status: "online",
@@ -27,6 +20,15 @@ export const getStats = async (req, res) => {
       role: "admin",
       status: "online",
     });
+
+    // Make sure the current user stays online
+    const currentUser = await User.findById(req.user._id);
+    if (currentUser) {
+      if (currentUser.status !== "online") {
+        currentUser.status = "online";
+        await currentUser.save();
+      }
+    }
 
     res.json({
       totalResidents,
@@ -39,12 +41,14 @@ export const getStats = async (req, res) => {
             name: currentUser.name,
             email: currentUser.email,
             role: currentUser.role,
-            isOnline: currentUser.status === "online",
+            status: currentUser.status,
           }
         : null,
     });
   } catch (error) {
-    console.error("Error fetching stats:", error);
-    res.status(500).json({ message: error.message });
+    console.error("Stats Error:", error.message);
+    res.status(500).json({ message: "Error fetching stats" });
   }
-};
+});
+
+export default router;
