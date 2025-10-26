@@ -8,7 +8,7 @@ import BarangaysPage from "./pages/BarangaysPage";
 import DashboardCard from "./components/DashboardCard";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminsPage from "./pages/AdminsPage";
-import AdminAccountPage from "./pages/AdminAccountPage"; // 🧩 NEW IMPORT
+import AdminAccountPage from "./pages/AdminAccountPage";
 
 function App() {
   return (
@@ -33,7 +33,7 @@ function App() {
         <Route path="residents" element={<ResidentsPage />} />
         <Route path="barangays" element={<BarangaysPage />} />
         <Route path="admins" element={<AdminsPage />} />
-        <Route path="account" element={<AdminAccountPage />} /> {/* 🧩 NEW ROUTE */}
+        <Route path="account" element={<AdminAccountPage />} />
       </Route>
 
       {/* 🚫 Fallback for undefined paths */}

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import Add from "../assets/Add.png";
+import Edit from "../assets/Edit.png";
+import Remove from "../assets/Remove.png";
 import {
   getResidents,
   addResident,
@@ -170,9 +173,10 @@ const ResidentsPage = () => {
         </h2>
         <button
           onClick={handleAddResident}
-          className="bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-2 bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          ➕ Add Resident
+          <img src={Add} alt="Add icon" className="h-8 w-8" />
+          Add Resident
         </button>
       </div>
 
@@ -223,18 +227,26 @@ const ResidentsPage = () => {
                     {resident.role}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 text-center">
-                    <button
-                      onClick={() => handleEdit(resident)}
-                      className="text-blue-500 cursor-pointer hover:text-blue-700 mx-2"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(resident._id)}
-                      className="text-red-500 cursor-pointer hover:text-red-700 mx-2"
-                    >
-                      🗑️
-                    </button>
+                    <div className="flex justify-center items-center gap-3">
+                      <button
+                        onClick={() => handleEdit(resident)}
+                        className="flex items-center justify-center bg-blue-50 hover:bg-blue-100 rounded-full p-2 transition"
+                        title="Edit Resident"
+                      >
+                        <img src={Edit} alt="Edit icon" className="h-6 w-6" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(resident._id)}
+                        className="flex items-center justify-center bg-red-50 hover:bg-red-100 rounded-full p-2 transition"
+                        title="Delete Resident"
+                      >
+                        <img
+                          src={Remove}
+                          alt="Delete icon"
+                          className="h-6 w-6"
+                        />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

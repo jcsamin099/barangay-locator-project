@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import Add from "../assets/Add.png";
+import Edit from "../assets/Edit.png";
+import Remove from "../assets/Remove.png";
 import {
   getAdmins,
   addAdmin,
@@ -167,12 +170,15 @@ const AdminPage = () => {
   return (
     <div className="p-6 bg-white rounded-xl shadow-md">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">🧑‍💼 Admin Management</h2>
+        <h2 className="text-2xl font-bold text-gray-800">
+          🧑‍💼 Admin Management
+        </h2>
         <button
           onClick={handleAddAdmin}
-          className="bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center gap-2 bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
-          ➕ Add Admin
+          <img src={Add} alt="Add icon" className="h-8 w-8" />
+          <span>Add Admin</span>
         </button>
       </div>
 
@@ -196,33 +202,54 @@ const AdminPage = () => {
           <table className="min-w-full border-collapse border border-gray-200">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border border-gray-200 px-4 py-2 text-left">Name</th>
-                <th className="border border-gray-200 px-4 py-2 text-left">Email</th>
-                <th className="border border-gray-200 px-4 py-2 text-left">Role</th>
-                <th className="border border-gray-200 px-4 py-2 text-center">Actions</th>
+                <th className="border border-gray-200 px-4 py-2 text-left">
+                  Name
+                </th>
+                <th className="border border-gray-200 px-4 py-2 text-left">
+                  Email
+                </th>
+                <th className="border border-gray-200 px-4 py-2 text-left">
+                  Role
+                </th>
+                <th className="border border-gray-200 px-4 py-2 text-center">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody>
               {filteredAdmins.map((admin) => (
                 <tr key={admin._id} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2">{admin.name}</td>
-                  <td className="border border-gray-200 px-4 py-2">{admin.email}</td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {admin.name}
+                  </td>
+                  <td className="border border-gray-200 px-4 py-2">
+                    {admin.email}
+                  </td>
                   <td className="border border-gray-200 px-4 py-2 capitalize">
                     {admin.role}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 text-center">
-                    <button
-                      onClick={() => handleEdit(admin)}
-                      className="text-blue-500 cursor-pointer hover:text-blue-700 mx-2"
-                    >
-                      ✏️
-                    </button>
-                    <button
-                      onClick={() => handleDelete(admin._id)}
-                      className="text-red-500 cursor-pointer hover:text-red-700 mx-2"
-                    >
-                      🗑️
-                    </button>
+                    <div className="flex justify-center items-center gap-3">
+                      <button
+                        onClick={() => handleEdit(admin)}
+                        className="flex items-center justify-center bg-blue-50 hover:bg-blue-100 rounded-full p-2 transition"
+                        title="Edit Admin"
+                      >
+                        <img src={Edit} alt="Edit icon" className="h-6 w-6" />
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(admin._id)}
+                        className="flex items-center justify-center bg-red-50 hover:bg-red-100 rounded-full p-2 transition"
+                        title="Delete Admin"
+                      >
+                        <img
+                          src={Remove}
+                          alt="Delete icon"
+                          className="h-6 w-6"
+                        />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

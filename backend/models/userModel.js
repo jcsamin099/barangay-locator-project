@@ -7,6 +7,11 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     role: { type: String, enum: ["admin", "resident"], default: "resident" },
     status: { type: String, enum: ["online", "offline"], default: "offline" },
+
+    image: {
+      type: String,
+      default: "/uploads/default-avatar.png", // ✅ only one image field
+    },
   },
   { timestamps: true }
 );
