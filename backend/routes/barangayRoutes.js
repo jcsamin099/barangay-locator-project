@@ -1,3 +1,4 @@
+// routes/barangayRoutes.js
 import express from "express";
 import {
   createBarangay,
@@ -10,12 +11,12 @@ import {
 
 const router = express.Router();
 
-// Everyone
+// 🟢 Everyone can view barangays
 router.get("/", getBarangays);
+router.get("/name/:name", getBarangayByName); // ✅ must come before `/:id`
 router.get("/:id", getBarangayById);
-router.get("/name/:name", getBarangayByName);
 
-// Admin only
+// 🔒 Admin-only routes
 router.post("/", createBarangay);
 router.put("/:id", updateBarangay);
 router.delete("/:id", deleteBarangay);

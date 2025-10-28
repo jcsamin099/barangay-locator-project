@@ -1,23 +1,35 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../services/authService";
+import Swal from "sweetalert2";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [err, setErr] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setErr("");
+
     try {
-      await register({ name, email, password }); // role omitted — backend defaults to "resident"
-      alert("Registered successfully! Please log in.");
+      await register({ name, email, password }); // backend defaults to "resident"
+
+      await Swal.fire({
+        icon: "success",
+        title: "Registered Successfully!",
+        text: "Your account has been created. You can now log in.",
+        confirmButtonColor: "#16a34a", // green-600
+      });
+
       navigate("/login");
     } catch (error: any) {
-      setErr(error.response?.data?.message || "Registration failed");
+      Swal.fire({
+        icon: "error",
+        title: "Registration Failed",
+        text: error.response?.data?.message || "Something went wrong. Please try again.",
+        confirmButtonColor: "#dc2626", // red-600
+      });
     }
   };
 
@@ -25,8 +37,6 @@ const RegisterPage = () => {
     <div style={{ minHeight: "100vh" }} className="flex items-center justify-center bg-gray-100">
       <form onSubmit={submit} className="bg-white p-8 rounded shadow w-96">
         <h2 className="text-2xl font-bold mb-4 text-center">Register</h2>
-
-        {err && <div className="text-red-600 mb-3">{err}</div>}
 
         <input
           value={name}
@@ -52,7 +62,9 @@ const RegisterPage = () => {
           required
         />
 
-        <button className="w-full bg-green-600 text-white p-2 rounded">Register</button>
+        <button className="w-full bg-green-600 hover:bg-green-700 text-white p-2 rounded transition">
+          Register
+        </button>
 
         <p className="mt-3 text-sm text-center">
           Already have an account?{" "}

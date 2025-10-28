@@ -16,7 +16,8 @@ const app = express();
 
 // 🌍 Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // ✅ Allows large payloads (for embedded maps, images, etc.)
+app.use(express.urlencoded({ extended: true }));
 
 // 🧠 Connect to MongoDB
 connectDB()
@@ -44,8 +45,10 @@ app.get("/", (req, res) => {
 
 // ⚠️ Global error handler (for unexpected errors)
 app.use((err, req, res, next) => {
-  console.error("Server Error:", err.stack);
-  res.status(500).json({ message: "Internal Server Error" });
+  console.error("🔥 Server Error:", err.stack);
+  res.status(500).json({
+    message: err.message || "Internal Server Error",
+  });
 });
 
 // 🚀 Start server

@@ -1,40 +1,38 @@
+// controllers/barangayController.js
 import Barangay from "../models/barangayModel.js";
 import jwt from "jsonwebtoken";
 import User from "../models/userModel.js";
 
-// 🔐 Middleware to verify admin
-const verifyAdmin = async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return res.status(401).json({ message: "Not authorized, no token" });
-    }
-
-    const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    const user = await User.findById(decoded.id);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    if (user.role !== "admin") {
-      return res.status(403).json({ message: "Access denied: Admins only" });
-    }
-
-    return user;
-  } catch (error) {
-    res.status(401).json({ message: "Invalid or expired token" });
+// 🔐 Verify admin with proper error throwing
+const verifyAdmin = async (req) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new Error("Not authorized, no token");
   }
+
+  const token = authHeader.split(" ")[1];
+  const decoded = jwt.verify(token, process.env.JWT_SECRET);
+  const user = await User.findById(decoded.id);
+
+  if (!user) throw new Error("User not found");
+  if (user.role !== "admin") throw new Error("Access denied: Admins only");
+
+  console.log(`✅ Admin verified: ${user.name}`);
+  return user;
 };
 
-// ✅ CREATE (Admin only)
+// ✅ CREATE
 export const createBarangay = async (req, res) => {
-  const user = await verifyAdmin(req, res);
-  if (!user) return;
+  console.log("📥 Create request:", req.body);
 
   try {
-    const { name, municipality, province, latitude, longitude } = req.body;
+    await verifyAdmin(req);
+
+    const { name, municipality, province, latitude, longitude, embedLink } = req.body;
+
+    if (!name || !municipality || !province) {
+      return res.status(400).json({ message: "Please fill in all required fields" });
+    }
 
     const existingBarangay = await Barangay.findOne({ name });
     if (existingBarangay) {
@@ -45,18 +43,21 @@ export const createBarangay = async (req, res) => {
       name,
       municipality,
       province,
-      latitude,
-      longitude,
+      latitude: latitude ? Number(latitude) : null,
+      longitude: longitude ? Number(longitude) : null,
+      embedLink,
     });
 
     const createdBarangay = await barangay.save();
+    console.log("✅ Barangay created:", createdBarangay.name);
     res.status(201).json(createdBarangay);
   } catch (error) {
+    console.error("🔥 Error creating barangay:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
 
-// ✅ READ ALL (Everyone)
+// ✅ READ ALL
 export const getBarangays = async (req, res) => {
   try {
     const barangays = await Barangay.find();
@@ -66,7 +67,7 @@ export const getBarangays = async (req, res) => {
   }
 };
 
-// ✅ READ ONE by ID (Everyone)
+// ✅ READ ONE by ID
 export const getBarangayById = async (req, res) => {
   try {
     const barangay = await Barangay.findById(req.params.id);
@@ -79,7 +80,7 @@ export const getBarangayById = async (req, res) => {
   }
 };
 
-// ✅ READ ONE by NAME (Everyone)
+// ✅ READ ONE by NAME
 export const getBarangayByName = async (req, res) => {
   try {
     const barangay = await Barangay.findOne({ name: req.params.name });
@@ -92,44 +93,43 @@ export const getBarangayByName = async (req, res) => {
   }
 };
 
-// ✅ UPDATE (Admin only)
+// ✅ UPDATE
 export const updateBarangay = async (req, res) => {
-  const user = await verifyAdmin(req, res);
-  if (!user) return;
-
   try {
+    await verifyAdmin(req);
     const barangay = await Barangay.findById(req.params.id);
-    if (!barangay) {
-      return res.status(404).json({ message: "Barangay not found" });
-    }
+    if (!barangay) return res.status(404).json({ message: "Barangay not found" });
 
-    barangay.name = req.body.name || barangay.name;
-    barangay.municipality = req.body.municipality || barangay.municipality;
-    barangay.province = req.body.province || barangay.province;
-    barangay.latitude = req.body.latitude || barangay.latitude;
-    barangay.longitude = req.body.longitude || barangay.longitude;
+    const { name, municipality, province, latitude, longitude, embedLink } = req.body;
 
-    const updatedBarangay = await barangay.save();
-    res.json(updatedBarangay);
+    barangay.name = name || barangay.name;
+    barangay.municipality = municipality || barangay.municipality;
+    barangay.province = province || barangay.province;
+    barangay.latitude = latitude ? Number(latitude) : barangay.latitude;
+    barangay.longitude = longitude ? Number(longitude) : barangay.longitude;
+    barangay.embedLink = embedLink || barangay.embedLink;
+
+    const updated = await barangay.save();
+    console.log("✅ Barangay updated:", updated.name);
+    res.json(updated);
   } catch (error) {
+    console.error("🔥 Error updating barangay:", error.message);
     res.status(400).json({ message: error.message });
   }
 };
 
-// ✅ DELETE (Admin only)
+// ✅ DELETE
 export const deleteBarangay = async (req, res) => {
-  const user = await verifyAdmin(req, res);
-  if (!user) return;
-
   try {
+    await verifyAdmin(req);
     const barangay = await Barangay.findById(req.params.id);
-    if (!barangay) {
-      return res.status(404).json({ message: "Barangay not found" });
-    }
+    if (!barangay) return res.status(404).json({ message: "Barangay not found" });
 
     await barangay.deleteOne();
+    console.log("🗑️ Barangay deleted:", barangay.name);
     res.json({ message: "Barangay deleted successfully" });
   } catch (error) {
+    console.error("🔥 Error deleting barangay:", error.message);
     res.status(500).json({ message: error.message });
   }
 };
