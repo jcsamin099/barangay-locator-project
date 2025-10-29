@@ -88,7 +88,7 @@ const ResidentsPage = () => {
     }
   };
 
-  // ✏️ Edit Resident (name, email, password)
+  // ✏️ Edit Resident
   const handleEdit = async (resident) => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Resident Info",
@@ -167,16 +167,18 @@ const ResidentsPage = () => {
 
   return (
     <div className="p-6 bg-white rounded-xl shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">
+      <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-3">
+        <h2 className="text-2xl font-bold text-gray-800 text-center sm:text-left">
           🏘️ Residents Management
         </h2>
         <button
           onClick={handleAddResident}
-          className="flex items-center gap-2 bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center justify-center sm:justify-between gap-2 bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto"
         >
-          <img src={Add} alt="Add icon" className="h-8 w-8" />
-          Add Resident
+          <img src={Add} alt="Add icon" className="h-6 w-6 sm:h-8 sm:w-8" />
+          <span className="text-sm sm:text-base font-medium">
+            Add Resident
+          </span>
         </button>
       </div>
 
@@ -197,7 +199,7 @@ const ResidentsPage = () => {
         <p>No residents found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-200">
+          <table className="min-w-full border-collapse border border-gray-200 text-sm sm:text-base">
             <thead className="bg-gray-100">
               <tr>
                 <th className="border border-gray-200 px-4 py-2 text-left">
@@ -217,23 +219,27 @@ const ResidentsPage = () => {
             <tbody>
               {filteredResidents.map((resident) => (
                 <tr key={resident._id} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2">
+                  <td className="border border-gray-200 px-4 py-2 break-words">
                     {resident.name}
                   </td>
-                  <td className="border border-gray-200 px-4 py-2">
+                  <td className="border border-gray-200 px-4 py-2 break-words">
                     {resident.email}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 capitalize">
                     {resident.role}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 text-center">
-                    <div className="flex justify-center items-center gap-3">
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3">
                       <button
                         onClick={() => handleEdit(resident)}
                         className="flex items-center justify-center bg-blue-50 hover:bg-blue-100 rounded-full p-2 transition"
                         title="Edit Resident"
                       >
-                        <img src={Edit} alt="Edit icon" className="h-6 w-6" />
+                        <img
+                          src={Edit}
+                          alt="Edit icon"
+                          className="h-5 w-5 sm:h-6 sm:w-6"
+                        />
                       </button>
                       <button
                         onClick={() => handleDelete(resident._id)}
@@ -243,7 +249,7 @@ const ResidentsPage = () => {
                         <img
                           src={Remove}
                           alt="Delete icon"
-                          className="h-6 w-6"
+                          className="h-5 w-5 sm:h-6 sm:w-6"
                         />
                       </button>
                     </div>

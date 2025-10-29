@@ -1,24 +1,28 @@
+// src/pages/BarangaysPage.tsx
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import Add from "../assets/Add.png";
 import Edit from "../assets/Edit.png";
 import Remove from "../assets/Remove.png";
 import api from "../api/axios";
-import MapModal from "../components/MapModal"; // ✅ Modal with Get Directions
+import MapModal from "../components/MapModal";
 
 const BarangaysPage = () => {
   const [barangays, setBarangays] = useState<any[]>([]);
+  const [filteredBarangays, setFilteredBarangays] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedBarangay, setSelectedBarangay] = useState<any | null>(null);
   const token = localStorage.getItem("token");
 
-  // 🔹 Fetch all barangays
+  // 🔹 Fetch barangays
   const fetchBarangays = async () => {
     try {
       const { data } = await api.get("/barangays", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBarangays(data);
+      setFilteredBarangays(data);
     } catch (err) {
       console.error("Error fetching barangays:", err);
       Swal.fire("Error", "Failed to load barangays.", "error");
@@ -31,14 +35,25 @@ const BarangaysPage = () => {
     fetchBarangays();
   }, []);
 
-  // 🧠 Helper: Extract `src` URL from iframe input
+  // 🔍 Search Filter
+  useEffect(() => {
+    const filtered = barangays.filter(
+      (b) =>
+        b.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        b.municipality.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (b.province || "").toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredBarangays(filtered);
+  }, [searchTerm, barangays]);
+
+  // 🧠 Extract `src` from iframe
   const extractEmbedLink = (input: string): string => {
     const match = input.match(/src="([^"]+)"/);
     if (match && match[1]) return match[1];
-    return input.trim(); // if user already pasted just the URL
+    return input.trim();
   };
 
-  // ➕ Add Barangay
+  // ➕ Add barangay
   const handleAddBarangay = async () => {
     const { value: formValues } = await Swal.fire({
       title: "Add Barangay Location",
@@ -85,7 +100,7 @@ const BarangaysPage = () => {
     }
   };
 
-  // ✏️ Edit Barangay
+  // ✏️ Edit barangay
   const handleEdit = async (barangay: any) => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Barangay",
@@ -132,7 +147,7 @@ const BarangaysPage = () => {
     }
   };
 
-  // 🗑️ Delete Barangay
+  // 🗑️ Delete barangay
   const handleDelete = async (id: string) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
@@ -160,68 +175,86 @@ const BarangaysPage = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-md">
+    <div className="p-4 sm:p-6 bg-white rounded-xl shadow-md">
       {/* Header */}
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">📍 Barangay Locations</h2>
-        <button
-          onClick={handleAddBarangay}
-          className="flex items-center gap-2 bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-        >
-          <img src={Add} alt="Add icon" className="h-8 w-8" />
-          Add Barangay
-        </button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800">
+          📍 Barangay Locations
+        </h2>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 w-full sm:w-auto">
+          
+          <button
+            onClick={handleAddBarangay}
+            className="flex items-center justify-center gap-2 bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm sm:text-base"
+          >
+            <img src={Add} alt="Add icon" className="h-6 w-6 sm:h-8 sm:w-8" />
+            <span className="text-sm sm:text-base font-medium">
+              Add Barangay
+            </span>
+          </button>
+        </div>
       </div>
 
+      <div className="mb-4 flex justify-between items-center">
+        <input
+            type="text"
+            placeholder="Search barangay..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-1/3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+      </div>
+
+      {/* Table Section */}
       {loading ? (
         <p>Loading barangays...</p>
-      ) : barangays.length === 0 ? (
+      ) : filteredBarangays.length === 0 ? (
         <p>No barangays found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-200">
+          <table className="min-w-full border-collapse border border-gray-200 text-sm sm:text-base">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border border-gray-200 px-4 py-2 text-left">Barangay</th>
-                <th className="border border-gray-200 px-4 py-2 text-left">Municipality</th>
-                <th className="border border-gray-200 px-4 py-2 text-left">Province</th>
-                <th className="border border-gray-200 px-4 py-2 text-center">Map</th>
-                <th className="border border-gray-200 px-4 py-2 text-center">Actions</th>
+                <th className="border border-gray-200 px-3 sm:px-4 py-2 text-left">Barangay</th>
+                <th className="border border-gray-200 px-3 sm:px-4 py-2 text-left">Municipality</th>
+                <th className="border border-gray-200 px-3 sm:px-4 py-2 text-left">Province</th>
+                <th className="border border-gray-200 px-3 sm:px-4 py-2 text-center">Map</th>
+                <th className="border border-gray-200 px-3 sm:px-4 py-2 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {barangays.map((b) => (
+              {filteredBarangays.map((b) => (
                 <tr key={b._id} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2">{b.name}</td>
-                  <td className="border border-gray-200 px-4 py-2">{b.municipality}</td>
-                  <td className="border border-gray-200 px-4 py-2">{b.province || "-"}</td>
-                  <td className="border border-gray-200 px-4 py-2 text-center">
+                  <td className="border border-gray-200 px-3 sm:px-4 py-2">{b.name}</td>
+                  <td className="border border-gray-200 px-3 sm:px-4 py-2">{b.municipality}</td>
+                  <td className="border border-gray-200 px-3 sm:px-4 py-2">{b.province || "-"}</td>
+                  <td className="border border-gray-200 px-3 sm:px-4 py-2 text-center">
                     {b.embedLink ? (
                       <button
                         onClick={() => setSelectedBarangay(b)}
-                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm"
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-2 sm:px-3 py-1 rounded-md text-xs sm:text-sm"
                       >
                         View Map
                       </button>
                     ) : (
-                      <span className="text-gray-400 italic">No map</span>
+                      <span className="text-gray-400 italic text-xs sm:text-sm">No map</span>
                     )}
                   </td>
-                  <td className="border border-gray-200 px-4 py-2 text-center">
-                    <div className="flex justify-center items-center gap-3">
+                  <td className="border border-gray-200 px-3 sm:px-4 py-2 text-center">
+                    <div className="flex justify-center items-center gap-2 sm:gap-3 flex-wrap">
                       <button
                         onClick={() => handleEdit(b)}
                         className="flex items-center justify-center bg-blue-50 hover:bg-blue-100 rounded-full p-2 transition"
                         title="Edit Barangay"
                       >
-                        <img src={Edit} alt="Edit icon" className="h-6 w-6" />
+                        <img src={Edit} alt="Edit" className="h-5 w-5 sm:h-6 sm:w-6" />
                       </button>
                       <button
                         onClick={() => handleDelete(b._id)}
                         className="flex items-center justify-center bg-red-50 hover:bg-red-100 rounded-full p-2 transition"
                         title="Delete Barangay"
                       >
-                        <img src={Remove} alt="Delete icon" className="h-6 w-6" />
+                        <img src={Remove} alt="Delete" className="h-5 w-5 sm:h-6 sm:w-6" />
                       </button>
                     </div>
                   </td>

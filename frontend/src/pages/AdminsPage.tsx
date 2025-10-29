@@ -17,7 +17,6 @@ const AdminPage = () => {
   const [loading, setLoading] = useState(true);
   const token = localStorage.getItem("token");
 
-  // 🔹 Fetch all admins
   const fetchAdmins = async () => {
     try {
       const data = await getAdmins(token);
@@ -34,10 +33,8 @@ const AdminPage = () => {
 
   useEffect(() => {
     fetchAdmins();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔍 Search filter
   useEffect(() => {
     const filtered = admins.filter(
       (a) =>
@@ -47,7 +44,6 @@ const AdminPage = () => {
     setFilteredAdmins(filtered);
   }, [searchQuery, admins]);
 
-  // ➕ Add Admin
   const handleAddAdmin = async () => {
     const { value: formValues } = await Swal.fire({
       title: "Add New Admin",
@@ -89,7 +85,6 @@ const AdminPage = () => {
     }
   };
 
-  // ✏️ Edit Admin
   const handleEdit = async (admin) => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Admin Info",
@@ -138,7 +133,6 @@ const AdminPage = () => {
     }
   };
 
-  // 🗑️ Delete Admin
   const handleDelete = async (id) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
@@ -168,22 +162,24 @@ const AdminPage = () => {
   };
 
   return (
-    <div className="p-6 bg-white rounded-xl shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">
+    <div className="p-4 sm:p-6 bg-white rounded-xl shadow-md">
+      {/* 🔹 Header */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-800 text-center sm:text-left">
           🧑‍💼 Admin Management
         </h2>
+
         <button
           onClick={handleAddAdmin}
-          className="flex items-center gap-2 bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          className="flex items-center justify-center sm:justify-start gap-2 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm sm:text-base hover:bg-blue-700 transition w-full sm:w-auto"
         >
-          <img src={Add} alt="Add icon" className="h-8 w-8" />
+          <img src={Add} alt="Add icon" className="h-6 w-6 sm:h-8 sm:w-8" />
           <span>Add Admin</span>
         </button>
       </div>
 
-      {/* 🔍 Modern Styled Search Bar (same as ResidentsPage) */}
-      <div className="mb-4 flex justify-between items-center">
+      {/* 🔍 Search Bar */}
+      <div className="mb-4 flex flex-col sm:flex-row justify-between items-center gap-3">
         <input
           type="text"
           placeholder="Search by name or email..."
@@ -193,13 +189,14 @@ const AdminPage = () => {
         />
       </div>
 
+      {/* 📋 Table */}
       {loading ? (
         <p>Loading admins...</p>
       ) : filteredAdmins.length === 0 ? (
         <p>No admins found.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full border-collapse border border-gray-200">
+          <table className="min-w-full border-collapse border border-gray-200 text-sm sm:text-base">
             <thead className="bg-gray-100">
               <tr>
                 <th className="border border-gray-200 px-4 py-2 text-left">
@@ -219,23 +216,23 @@ const AdminPage = () => {
             <tbody>
               {filteredAdmins.map((admin) => (
                 <tr key={admin._id} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2">
+                  <td className="border border-gray-200 px-4 py-2 break-words max-w-[150px] sm:max-w-none">
                     {admin.name}
                   </td>
-                  <td className="border border-gray-200 px-4 py-2">
+                  <td className="border border-gray-200 px-4 py-2 break-words max-w-[180px] sm:max-w-none">
                     {admin.email}
                   </td>
-                  <td className="border border-gray-200 px-4 py-2 capitalize">
+                  <td className="border border-gray-200 px-4 py-2 capitalize text-center sm:text-left">
                     {admin.role}
                   </td>
                   <td className="border border-gray-200 px-4 py-2 text-center">
-                    <div className="flex justify-center items-center gap-3">
+                    <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3">
                       <button
                         onClick={() => handleEdit(admin)}
                         className="flex items-center justify-center bg-blue-50 hover:bg-blue-100 rounded-full p-2 transition"
                         title="Edit Admin"
                       >
-                        <img src={Edit} alt="Edit icon" className="h-6 w-6" />
+                        <img src={Edit} alt="Edit icon" className="h-5 w-5 sm:h-6 sm:w-6" />
                       </button>
 
                       <button
@@ -243,11 +240,7 @@ const AdminPage = () => {
                         className="flex items-center justify-center bg-red-50 hover:bg-red-100 rounded-full p-2 transition"
                         title="Delete Admin"
                       >
-                        <img
-                          src={Remove}
-                          alt="Delete icon"
-                          className="h-6 w-6"
-                        />
+                        <img src={Remove} alt="Delete icon" className="h-5 w-5 sm:h-6 sm:w-6" />
                       </button>
                     </div>
                   </td>

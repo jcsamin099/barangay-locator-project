@@ -6,8 +6,11 @@ import Sidebar from "../components/Sidebar";
 const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
+      {/* Sidebar is fully controlled inside Sidebar.tsx */}
       <Sidebar />
-      <main className="flex-1 ml-64 p-8">
+
+      {/* Main content area */}
+      <main className="flex-1 w-full p-6 sm:p-8 lg:ml-64">
         <Outlet />
       </main>
     </div>
