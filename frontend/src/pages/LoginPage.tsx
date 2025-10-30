@@ -12,19 +12,27 @@ const LoginPage = () => {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErr("");
+
     try {
       const res = await login({ email, password });
+
       // backend returns { token, user: { id, name, role } }
       const token = res.token;
       const user = res.user || res;
+
+      // 🧠 Store login details in localStorage
       localStorage.setItem("token", token);
       localStorage.setItem("role", user.role);
-      localStorage.setItem("userName", user.name || "");
-      // redirect admin to admin dashboard
+      localStorage.setItem("userName", user.name || "Resident");
+
+      // 🎯 Redirect based on role
       if (user.role === "admin") {
         navigate("/admin");
+      } else if (user.role === "resident") {
+        navigate("/resident-main");
       } else {
-        navigate("/"); // or resident view
+        // fallback if role is missing or unrecognized
+        navigate("/");
       }
     } catch (error: any) {
       console.error("login error", error);
@@ -33,19 +41,40 @@ const LoginPage = () => {
   };
 
   return (
-    <div style={{ minHeight: "100vh" }} className="flex items-center justify-center bg-gray-100">
+    <div
+      style={{ minHeight: "100vh" }}
+      className="flex items-center justify-center bg-gray-100"
+    >
       <form onSubmit={submit} className="bg-white p-8 rounded shadow w-96">
         <h2 className="text-2xl font-bold mb-4 text-center">Login</h2>
 
         {err && <div className="text-red-600 mb-3">{err}</div>}
 
-        <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" className="w-full mb-3 p-2 border rounded" required />
-        <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" className="w-full mb-3 p-2 border rounded" required />
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Email"
+          className="w-full mb-3 p-2 border rounded"
+          required
+        />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Password"
+          type="password"
+          className="w-full mb-3 p-2 border rounded"
+          required
+        />
 
-        <button className="w-full bg-blue-600 text-white p-2 rounded">Log In</button>
+        <button className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition">
+          Log In
+        </button>
 
         <p className="mt-3 text-sm text-center">
-          Don't have an account yet? <Link to="/register" className="text-blue-600 underline">Register</Link>
+          Don't have an account yet?{" "}
+          <Link to="/register" className="text-blue-600 underline">
+            Register
+          </Link>
         </p>
       </form>
     </div>
