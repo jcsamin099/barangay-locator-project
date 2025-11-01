@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
@@ -9,7 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import AdminsPage from "./pages/AdminsPage";
 import AdminAccountPage from "./pages/AdminAccountPage";
 import ResidentMainPage from "./pages/ResidentMainPage";
-import ResidentNavigatePage from "./pages/ResidentNavigatePage"; // ✅ Added Navigate page
+import ResidentNavigatePage from "./pages/ResidentNavigatePage";
 
 function App() {
   return (
@@ -38,24 +39,24 @@ function App() {
 
       {/* 🧭 Protected Resident Routes */}
       <Route
-        path="/resident-main"
+        path="/resident/*"
         element={
           <ProtectedRoute requiredRole="resident">
             <ResidentMainPage />
           </ProtectedRoute>
         }
-      />
-      <Route
-        path="/resident-navigate"
-        element={
-          <ProtectedRoute requiredRole="resident">
-            <ResidentNavigatePage />
-          </ProtectedRoute>
-        }
-      />
+      >
+        {/* Default route for residents → NavigatePage */}
+        <Route index element={<ResidentNavigatePage />} />
+        <Route path="navigate" element={<ResidentNavigatePage />} />
+        <Route path="account" element={<div>Manage Account Page (soon)</div>} />
+      </Route>
 
-      {/* 🚫 Fallback for undefined paths */}
-      <Route path="*" element={<div className="p-6">Not Found</div>} />
+      {/* 👇 Optional route for backward compatibility */}
+      <Route
+        path="/resident-main"
+        element={<Navigate to="/resident" replace />}
+      />
     </Routes>
   );
 }
