@@ -8,7 +8,7 @@ dotenv.config();
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
-// 🔧 Helper: safely delete old images
+/* 🔧 Helper: safely delete old images */
 const deleteImageIfExists = (imagePath) => {
   try {
     if (imagePath && fs.existsSync(path.resolve(`.${imagePath}`))) {
@@ -63,7 +63,7 @@ export const updateUser = async (req, res) => {
   }
 };
 
-/* 👤 UPDATE OWN PROFILE (Admin self-edit) */
+/* 👤 UPDATE OWN PROFILE (Resident/Admin self-edit) */
 export const updateOwnProfile = async (req, res) => {
   try {
     const userId = req.user?._id;
@@ -81,7 +81,6 @@ export const updateOwnProfile = async (req, res) => {
     // 🖼 Handle uploaded image
     if (req.file) {
       deleteImageIfExists(user.image);
-
       const normalizedPath = req.file.path.replace(/\\/g, "/");
       user.image = normalizedPath.startsWith("/uploads/")
         ? normalizedPath
@@ -90,6 +89,7 @@ export const updateOwnProfile = async (req, res) => {
 
     const updatedUser = await user.save();
 
+    // ✅ Return updated user info for instant frontend update
     res.status(200).json({
       user: {
         _id: updatedUser._id,

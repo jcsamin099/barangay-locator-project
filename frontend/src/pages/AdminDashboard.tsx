@@ -1,11 +1,14 @@
 // src/pages/AdminDashboard.tsx
 import React from "react";
+import Header from "../components/Header";
 import { Outlet } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 
 const AdminDashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
+      
+
       {/* Sidebar is fully controlled inside Sidebar.tsx */}
       <Sidebar />
 

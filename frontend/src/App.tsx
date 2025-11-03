@@ -11,6 +11,7 @@ import AdminsPage from "./pages/AdminsPage";
 import AdminAccountPage from "./pages/AdminAccountPage";
 import ResidentMainPage from "./pages/ResidentMainPage";
 import ResidentNavigatePage from "./pages/ResidentNavigatePage";
+import ResidentAccountPage from "./pages/ResidentAccountPage";
 
 function App() {
   return (
@@ -49,7 +50,7 @@ function App() {
         {/* Default route for residents → NavigatePage */}
         <Route index element={<ResidentNavigatePage />} />
         <Route path="navigate" element={<ResidentNavigatePage />} />
-        <Route path="account" element={<div>Manage Account Page (soon)</div>} />
+        <Route path="account" element={<ResidentAccountPage />} />
       </Route>
 
       {/* 👇 Optional route for backward compatibility */}
