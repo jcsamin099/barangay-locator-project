@@ -44,18 +44,36 @@ const ResidentSidebar: React.FC = () => {
       }, 1000);
     };
     window.addEventListener("profileUpdated", handleProfileUpdated);
-    return () => window.removeEventListener("profileUpdated", handleProfileUpdated);
+    return () =>
+      window.removeEventListener("profileUpdated", handleProfileUpdated);
   }, []);
 
-  const handleLogout = () => {
+  // ✅ Updated logout function — marks user as offline in backend
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+
     Swal.fire({
       title: "Logout?",
       text: "Are you sure you want to log out?",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Yes, logout",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
+        try {
+          // 🔹 Notify backend that the user is now offline
+          await axios.post(
+            "http://localhost:5000/api/auth/logout",
+            {},
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+        } catch (error) {
+          console.error("Logout error:", error);
+        }
+
+        // 🔹 Clear token and redirect to login
         localStorage.removeItem("token");
         navigate("/login");
       }
@@ -106,7 +124,9 @@ const ResidentSidebar: React.FC = () => {
               {user?.name?.charAt(0)?.toUpperCase() || "?"}
             </div>
           )}
-          <p className="text-lg font-semibold text-white">{user?.name || "Resident"}</p>
+          <p className="text-lg font-semibold text-white">
+            {user?.name || "Resident"}
+          </p>
           <p className="text-sm text-gray-400">{user?.email}</p>
           <p className="text-sm text-gray-400 mt-1">🕒 {time}</p>
         </div>
@@ -116,7 +136,6 @@ const ResidentSidebar: React.FC = () => {
 
         {/* Buttons Section */}
         <div className="w-full px-6 space-y-3 mb-8">
-          {/* ✅ Navigate Button Restored */}
           <button
             onClick={() => {
               navigate("/resident-main");
