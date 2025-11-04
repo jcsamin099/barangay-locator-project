@@ -14,12 +14,23 @@ dotenv.config();
 
 const app = express();
 
-// 🌍 Middleware
-app.use(cors());
-app.use(express.json({ limit: "10mb" })); // ✅ Allows large payloads (for embedded maps, images, etc.)
+// ✅ CORS Configuration — allow frontend & local dev
+app.use(
+  cors({
+    origin: [
+      "https://barangay-locator-bjab.vercel.app", // ✅ your deployed frontend
+      "http://localhost:5173", // ✅ local dev
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
+// ✅ Middleware
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
-// 🧠 Connect to MongoDB
+// ✅ Connect to MongoDB
 connectDB()
   .then(() => console.log("✅ MongoDB connected successfully"))
   .catch((err) => {
@@ -27,23 +38,23 @@ connectDB()
     process.exit(1);
   });
 
-// 📂 Serve uploaded images statically
+// ✅ Serve uploaded files (if any)
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// 🚏 API Routes
+// ✅ API Routes
 app.use("/api/users", userRoutes);
 app.use("/api/barangays", barangayRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/stats", statsRoutes);
 
-// 🧭 Root endpoint (for testing)
+// ✅ Test Route
 app.get("/", (req, res) => {
-  res.send("🌍 Barangay Locator API is running...");
+  res.send("🌍 Barangay Locator API is running successfully!");
 });
 
-// ⚠️ Global error handler (for unexpected errors)
+// ✅ Error Handler (keep this last)
 app.use((err, req, res, next) => {
   console.error("🔥 Server Error:", err.stack);
   res.status(500).json({
@@ -51,8 +62,8 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 🚀 Start server
+// ✅ Server Start
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`🚀 Server running on http://localhost:${PORT}`)
-);
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
