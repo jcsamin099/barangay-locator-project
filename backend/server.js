@@ -18,7 +18,7 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "https://barangay-locator-bjab.vercel.app", // ✅ your deployed frontend
+      "https://barangay-locator-project.vercel.app/", // ✅ your deployed frontend
       "http://localhost:5173", // ✅ local dev
     ],
     methods: ["GET", "POST", "PUT", "DELETE"],
