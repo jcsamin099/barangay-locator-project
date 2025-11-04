@@ -14,13 +14,27 @@ dotenv.config();
 
 const app = express();
 
-// ✅ CORS Configuration — allow deployed frontend + local dev
+// ✅ Explicitly define allowed origins
+const allowedOrigins = [
+  "https://barangay-locator-project.vercel.app", // ✅ your Vercel frontend (no trailing slash)
+  "http://localhost:5173", // ✅ local dev
+];
+
+// ✅ CORS Configuration with logging
 app.use(
   cors({
-    origin: [
-      "https://barangay-locator-project.vercel.app", // ❌ no trailing slash!
-      "http://localhost:5173", // local dev
-    ],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        console.log(`✅ CORS origin allowed: ${origin}`);
+        callback(null, true);
+      } else {
+        console.warn(`❌ CORS blocked for origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
@@ -39,7 +53,7 @@ connectDB()
     process.exit(1);
   });
 
-// ✅ Serve uploaded files (if any)
+// ✅ Serve static uploads folder
 const __dirname = path.resolve();
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
@@ -55,7 +69,7 @@ app.get("/", (req, res) => {
   res.send("🌍 Barangay Locator API is running successfully!");
 });
 
-// ✅ Error Handler (must stay last)
+// ✅ Error Handler (must be last)
 app.use((err, req, res, next) => {
   console.error("🔥 Server Error:", err.stack);
   res.status(500).json({
@@ -63,7 +77,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// ✅ Server Start
+// ✅ Start the Server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
