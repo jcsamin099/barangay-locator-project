@@ -14,14 +14,15 @@ dotenv.config();
 
 const app = express();
 
-// ✅ CORS Configuration — allow frontend & local dev
+// ✅ CORS Configuration — allow deployed frontend + local dev
 app.use(
   cors({
     origin: [
-      "https://barangay-locator-project.vercel.app/", // ✅ your deployed frontend
-      "http://localhost:5173", // ✅ local dev
+      "https://barangay-locator-project.vercel.app", // ❌ no trailing slash!
+      "http://localhost:5173", // local dev
     ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
@@ -49,12 +50,12 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/stats", statsRoutes);
 
-// ✅ Test Route
+// ✅ Root Route
 app.get("/", (req, res) => {
   res.send("🌍 Barangay Locator API is running successfully!");
 });
 
-// ✅ Error Handler (keep this last)
+// ✅ Error Handler (must stay last)
 app.use((err, req, res, next) => {
   console.error("🔥 Server Error:", err.stack);
   res.status(500).json({
