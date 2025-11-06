@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import axios from "../api/axios"; // ✅ use centralized axios instance
 import Swal from "sweetalert2";
 import { Camera, Save } from "lucide-react";
 
@@ -11,13 +11,12 @@ const ResidentAccountPage = () => {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const API_URL = "http://localhost:5000/api/users/me"; // ✅ Adjust if needed (e.g. /api/residents/me)
   const token = localStorage.getItem("token");
 
   // ✅ Fetch current resident info
   const fetchProfile = async () => {
     try {
-      const { data } = await axios.get(API_URL, {
+      const { data } = await axios.get("/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -26,7 +25,7 @@ const ResidentAccountPage = () => {
       if (data.image) {
         const fullImageUrl = data.image.startsWith("http")
           ? data.image
-          : `http://localhost:5000${data.image}`;
+          : `${import.meta.env.VITE_BACKEND_URL}${data.image}`;
         setImagePreview(fullImageUrl);
       }
     } catch (error) {
@@ -61,7 +60,7 @@ const ResidentAccountPage = () => {
     if (imageFile) formData.append("image", imageFile);
 
     try {
-      await axios.put(API_URL, formData, {
+      await axios.put("/users/me", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

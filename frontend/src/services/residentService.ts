@@ -1,21 +1,16 @@
-// src/services/residentService.js
-import axios from "axios";
-
-const API_URL = "http://localhost:5000/api/users"; // ✅ Adjust if backend uses /api/auth
+import api from "../api/axios";
 
 // 🧩 Get only residents
-export const getResidents = async (token) => {
+export const getResidents = async () => {
   try {
-    const response = await axios.get(API_URL, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await api.get("/users");
 
-    // ✅ Handle both array and object response (e.g., { users: [...] })
+    // ✅ Handle both array and object responses
     const users = Array.isArray(response.data)
       ? response.data
       : response.data.users || [];
 
-    // ✅ Filter only users with role === "resident"
+    // ✅ Filter only residents
     return users.filter((user) => user.role === "resident");
   } catch (error) {
     console.error("Error fetching residents:", error);
@@ -24,16 +19,12 @@ export const getResidents = async (token) => {
 };
 
 // ➕ Add new resident
-export const addResident = async (token, formData) => {
+export const addResident = async (formData: any) => {
   try {
-    // ✅ Some backends use /api/users/register, others use /api/auth/register
-    const response = await axios.post(
-      `${API_URL}/register`,
-      { ...formData, role: "resident" },
-      {
-        headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+    const response = await api.post("/users/register", {
+      ...formData,
+      role: "resident", // force role = resident
+    });
     return response.data;
   } catch (error) {
     console.error("Error adding resident:", error);
@@ -42,12 +33,9 @@ export const addResident = async (token, formData) => {
 };
 
 // ✏️ Update resident info
-export const updateResident = async (token, id, formData) => {
+export const updateResident = async (id: string, formData: any) => {
   try {
-    // ✅ Common backend route: PUT /api/users/:id
-    const response = await axios.put(`${API_URL}/${id}`, formData, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await api.put(`/users/${id}`, formData);
     return response.data;
   } catch (error) {
     console.error("Error updating resident:", error);
@@ -56,12 +44,9 @@ export const updateResident = async (token, id, formData) => {
 };
 
 // 🗑️ Delete resident
-export const deleteResident = async (token, id) => {
+export const deleteResident = async (id: string) => {
   try {
-    // ✅ Common backend route: DELETE /api/users/:id
-    const response = await axios.delete(`${API_URL}/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    const response = await api.delete(`/users/${id}`);
     return response.data;
   } catch (error) {
     console.error("Error deleting resident:", error);

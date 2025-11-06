@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Navigation, UserCog, LogOut, Menu, X } from "lucide-react";
-import axios from "axios";
 import Swal from "sweetalert2";
+import axiosInstance from "../api/axios"; // ✅ centralized axios instance
 
 const ResidentSidebar: React.FC = () => {
   const location = useLocation();
@@ -23,7 +23,7 @@ const ResidentSidebar: React.FC = () => {
   const fetchUser = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await axios.get("http://localhost:5000/api/users/me", {
+      const res = await axiosInstance.get("/users/me", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(res.data);
@@ -61,9 +61,8 @@ const ResidentSidebar: React.FC = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          // 🔹 Notify backend that the user is now offline
-          await axios.post(
-            "http://localhost:5000/api/auth/logout",
+          await axiosInstance.post(
+            "/auth/logout",
             {},
             {
               headers: { Authorization: `Bearer ${token}` },
@@ -73,7 +72,6 @@ const ResidentSidebar: React.FC = () => {
           console.error("Logout error:", error);
         }
 
-        // 🔹 Clear token and redirect to login
         localStorage.removeItem("token");
         navigate("/login");
       }
@@ -131,7 +129,6 @@ const ResidentSidebar: React.FC = () => {
           <p className="text-sm text-gray-400 mt-1">🕒 {time}</p>
         </div>
 
-        {/* Spacer */}
         <div className="flex-1" />
 
         {/* Buttons Section */}

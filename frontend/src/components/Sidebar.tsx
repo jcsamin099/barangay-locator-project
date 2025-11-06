@@ -1,8 +1,17 @@
 // src/components/Sidebar.tsx
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Home, Users, MapPin, LogOut, Shield, UserCog, Menu, X } from "lucide-react";
-import axios from "axios";
+import {
+  Home,
+  Users,
+  MapPin,
+  LogOut,
+  Shield,
+  UserCog,
+  Menu,
+  X,
+} from "lucide-react";
+import axiosInstance from "../api/axios"; // ✅ Use centralized axios
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -14,8 +23,8 @@ const Sidebar = () => {
       const token = localStorage.getItem("token");
 
       if (token) {
-        await axios.post(
-          "http://localhost:5000/api/auth/logout",
+        await axiosInstance.post(
+          "/auth/logout",
           {},
           { headers: { Authorization: `Bearer ${token}` } }
         );

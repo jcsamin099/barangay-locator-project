@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../api/axios"; // ✅ use your centralized axios instance
 
 interface Stats {
   totalResidents: number;
@@ -22,7 +22,7 @@ const DashboardCard = () => {
   const fetchStats = async () => {
     try {
       const token = localStorage.getItem("token");
-      const { data } = await axios.get("http://localhost:5000/api/stats", {
+      const { data } = await axiosInstance.get("/stats", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setStats(data);
@@ -39,7 +39,10 @@ const DashboardCard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  if (loading) return <p className="text-center text-gray-600">Loading dashboard data...</p>;
+  if (loading)
+    return (
+      <p className="text-center text-gray-600">Loading dashboard data...</p>
+    );
 
   return (
     <div className="bg-white p-6 sm:p-8 rounded-xl shadow-md w-full">
@@ -73,7 +76,6 @@ const DashboardCard = () => {
         </div>
       )}
 
-      {/* ✅ Responsive grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6">
         <div className="p-4 sm:p-6 bg-blue-100 rounded-lg shadow text-center hover:scale-105 transition-transform duration-200">
           <h3 className="text-gray-700 font-medium text-sm sm:text-base">
