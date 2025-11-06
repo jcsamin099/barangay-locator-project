@@ -1,16 +1,14 @@
 import api from "../api/axios";
 
-// 🧩 Get only residents
+// 🧩 Get all residents
 export const getResidents = async () => {
   try {
     const response = await api.get("/users");
 
-    // ✅ Normalize data in case backend returns different shapes
     const users = Array.isArray(response.data)
       ? response.data
       : response.data.users || [];
 
-    // ✅ Filter residents only
     return users.filter((user: any) => user.role === "resident");
   } catch (error: any) {
     console.error("Error fetching residents:", error);
@@ -27,7 +25,7 @@ export const addResident = async (formData: {
   try {
     const response = await api.post("/users/register", {
       ...formData,
-      role: "resident", // force resident role
+      role: "resident",
     });
     return response.data;
   } catch (error: any) {

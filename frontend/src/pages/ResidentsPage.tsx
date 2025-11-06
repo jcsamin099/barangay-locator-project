@@ -15,15 +15,13 @@ const ResidentsPage = () => {
   const [filteredResidents, setFilteredResidents] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
 
   // 🔹 Fetch all residents
   const fetchResidents = async () => {
     try {
-      const data = await getResidents(token);
-      const residentUsers = data.filter((res) => res.role === "resident");
-      setResidents(residentUsers);
-      setFilteredResidents(residentUsers);
+      const data = await getResidents();
+      setResidents(data);
+      setFilteredResidents(data);
     } catch (error) {
       console.error("Error fetching residents:", error);
       Swal.fire("Error", "Failed to load residents.", "error");
@@ -59,9 +57,9 @@ const ResidentsPage = () => {
       showCancelButton: true,
       confirmButtonText: "Add Resident",
       preConfirm: () => {
-        const name = document.getElementById("swal-name").value.trim();
-        const email = document.getElementById("swal-email").value.trim();
-        const password = document.getElementById("swal-password").value.trim();
+        const name = (document.getElementById("swal-name") as HTMLInputElement).value.trim();
+        const email = (document.getElementById("swal-email") as HTMLInputElement).value.trim();
+        const password = (document.getElementById("swal-password") as HTMLInputElement).value.trim();
 
         if (!name || !email || !password) {
           Swal.showValidationMessage("All fields are required!");
@@ -74,14 +72,14 @@ const ResidentsPage = () => {
 
     if (formValues) {
       try {
-        await addResident(token, formValues);
+        await addResident(formValues);
         Swal.fire("Added!", "New resident has been created.", "success");
         fetchResidents();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error adding resident:", error);
         Swal.fire(
           "Error",
-          error.response?.data?.message || "Failed to add resident.",
+          error.message || "Failed to add resident.",
           "error"
         );
       }
@@ -89,7 +87,7 @@ const ResidentsPage = () => {
   };
 
   // ✏️ Edit Resident
-  const handleEdit = async (resident) => {
+  const handleEdit = async (resident: any) => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Resident Info",
       html: `
@@ -102,10 +100,10 @@ const ResidentsPage = () => {
       showCancelButton: true,
       confirmButtonText: "Save Changes",
       preConfirm: () => {
-        const name = document.getElementById("swal-name").value.trim();
-        const email = document.getElementById("swal-email").value.trim();
-        const password = document.getElementById("swal-password").value.trim();
-        const confirm = document.getElementById("swal-confirm").value.trim();
+        const name = (document.getElementById("swal-name") as HTMLInputElement).value.trim();
+        const email = (document.getElementById("swal-email") as HTMLInputElement).value.trim();
+        const password = (document.getElementById("swal-password") as HTMLInputElement).value.trim();
+        const confirm = (document.getElementById("swal-confirm") as HTMLInputElement).value.trim();
 
         if (password && password !== confirm) {
           Swal.showValidationMessage("Passwords do not match!");
@@ -122,22 +120,18 @@ const ResidentsPage = () => {
 
     if (formValues) {
       try {
-        await updateResident(token, resident._id, formValues);
+        await updateResident(resident._id, formValues);
         Swal.fire("Updated!", "Resident info has been updated.", "success");
         fetchResidents();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error updating resident:", error);
-        Swal.fire(
-          "Error",
-          error.response?.data?.message || "Failed to update resident.",
-          "error"
-        );
+        Swal.fire("Error", error.message || "Failed to update resident.", "error");
       }
     }
   };
 
   // 🗑️ Delete Resident
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
       text: "This resident account will be permanently deleted.",
@@ -151,16 +145,12 @@ const ResidentsPage = () => {
 
     if (confirm.isConfirmed) {
       try {
-        await deleteResident(token, id);
+        await deleteResident(id);
         Swal.fire("Deleted!", "Resident has been deleted.", "success");
         fetchResidents();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error deleting resident:", error);
-        Swal.fire(
-          "Error",
-          error.response?.data?.message || "Failed to delete resident.",
-          "error"
-        );
+        Swal.fire("Error", error.message || "Failed to delete resident.", "error");
       }
     }
   };
@@ -176,9 +166,7 @@ const ResidentsPage = () => {
           className="flex items-center justify-center sm:justify-between gap-2 bg-blue-600 text-white cursor-pointer px-4 py-2 rounded-lg hover:bg-blue-700 transition w-full sm:w-auto"
         >
           <img src={Add} alt="Add icon" className="h-6 w-6 sm:h-8 sm:w-8" />
-          <span className="text-sm sm:text-base font-medium">
-            Add Resident
-          </span>
+          <span className="text-sm sm:text-base font-medium">Add Resident</span>
         </button>
       </div>
 
@@ -202,32 +190,18 @@ const ResidentsPage = () => {
           <table className="min-w-full border-collapse border border-gray-200 text-sm sm:text-base">
             <thead className="bg-gray-100">
               <tr>
-                <th className="border border-gray-200 px-4 py-2 text-left">
-                  Name
-                </th>
-                <th className="border border-gray-200 px-4 py-2 text-left">
-                  Email
-                </th>
-                <th className="border border-gray-200 px-4 py-2 text-left">
-                  Role
-                </th>
-                <th className="border border-gray-200 px-4 py-2 text-center">
-                  Actions
-                </th>
+                <th className="border border-gray-200 px-4 py-2 text-left">Name</th>
+                <th className="border border-gray-200 px-4 py-2 text-left">Email</th>
+                <th className="border border-gray-200 px-4 py-2 text-left">Role</th>
+                <th className="border border-gray-200 px-4 py-2 text-center">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredResidents.map((resident) => (
+              {filteredResidents.map((resident: any) => (
                 <tr key={resident._id} className="hover:bg-gray-50">
-                  <td className="border border-gray-200 px-4 py-2 break-words">
-                    {resident.name}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 break-words">
-                    {resident.email}
-                  </td>
-                  <td className="border border-gray-200 px-4 py-2 capitalize">
-                    {resident.role}
-                  </td>
+                  <td className="border border-gray-200 px-4 py-2 break-words">{resident.name}</td>
+                  <td className="border border-gray-200 px-4 py-2 break-words">{resident.email}</td>
+                  <td className="border border-gray-200 px-4 py-2 capitalize">{resident.role}</td>
                   <td className="border border-gray-200 px-4 py-2 text-center">
                     <div className="flex flex-col sm:flex-row justify-center items-center gap-2 sm:gap-3">
                       <button
@@ -235,22 +209,14 @@ const ResidentsPage = () => {
                         className="flex items-center justify-center bg-blue-50 hover:bg-blue-100 rounded-full p-2 transition"
                         title="Edit Resident"
                       >
-                        <img
-                          src={Edit}
-                          alt="Edit icon"
-                          className="h-5 w-5 sm:h-6 sm:w-6"
-                        />
+                        <img src={Edit} alt="Edit icon" className="h-5 w-5 sm:h-6 sm:w-6" />
                       </button>
                       <button
                         onClick={() => handleDelete(resident._id)}
                         className="flex items-center justify-center bg-red-50 hover:bg-red-100 rounded-full p-2 transition"
                         title="Delete Resident"
                       >
-                        <img
-                          src={Remove}
-                          alt="Delete icon"
-                          className="h-5 w-5 sm:h-6 sm:w-6"
-                        />
+                        <img src={Remove} alt="Delete icon" className="h-5 w-5 sm:h-6 sm:w-6" />
                       </button>
                     </div>
                   </td>
