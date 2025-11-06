@@ -6,7 +6,7 @@ const api = axios.create({
     import.meta.env.VITE_API_URL ||
     (import.meta.env.DEV
       ? "http://localhost:5000/api" // local dev
-      : "https://barangay-locator-backend.onrender.com/api"), // your Render backend
+      : "https://barangay-backend.onrender.com/api"), // your Render backend
   headers: {
     "Content-Type": "application/json",
   },
