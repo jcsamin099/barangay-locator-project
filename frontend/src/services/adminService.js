@@ -27,13 +27,12 @@ export const deleteAdmin = async (id) => {
   return response.data;
 };
 
-// 🔘 Set admin online (on login)
+// 🔘 Set admin online/offline
 export const setAdminOnline = async (userId) => {
   const response = await api.put(`/users/${userId}`, { status: "online" });
   return response.data;
 };
 
-// 🔘 Set admin offline (on logout)
 export const setAdminOffline = async (userId) => {
   const response = await api.put(`/users/${userId}`, { status: "offline" });
   return response.data;

@@ -10,17 +10,23 @@ import {
   deleteAdmin,
 } from "../services/adminService";
 
-const AdminPage = () => {
-  const [admins, setAdmins] = useState([]);
-  const [filteredAdmins, setFilteredAdmins] = useState([]);
+interface Admin {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+const AdminPage: React.FC = () => {
+  const [admins, setAdmins] = useState<Admin[]>([]);
+  const [filteredAdmins, setFilteredAdmins] = useState<Admin[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-  const token = localStorage.getItem("token");
 
   const fetchAdmins = async () => {
     try {
-      const data = await getAdmins(token);
-      const adminUsers = data.filter((user) => user.role === "admin");
+      const data = await getAdmins();
+      const adminUsers = data.filter((user: Admin) => user.role === "admin");
       setAdmins(adminUsers);
       setFilteredAdmins(adminUsers);
     } catch (error) {
@@ -56,9 +62,13 @@ const AdminPage = () => {
       showCancelButton: true,
       confirmButtonText: "Add Admin",
       preConfirm: () => {
-        const name = document.getElementById("swal-name").value.trim();
-        const email = document.getElementById("swal-email").value.trim();
-        const password = document.getElementById("swal-password").value.trim();
+        const name = (document.getElementById("swal-name") as HTMLInputElement)
+          .value.trim();
+        const email = (document.getElementById("swal-email") as HTMLInputElement)
+          .value.trim();
+        const password = (
+          document.getElementById("swal-password") as HTMLInputElement
+        ).value.trim();
 
         if (!name || !email || !password) {
           Swal.showValidationMessage("All fields are required!");
@@ -71,10 +81,10 @@ const AdminPage = () => {
 
     if (formValues) {
       try {
-        await addAdmin(token, formValues);
+        await addAdmin(formValues);
         Swal.fire("Added!", "New admin has been created.", "success");
         fetchAdmins();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error adding admin:", error);
         Swal.fire(
           "Error",
@@ -85,7 +95,7 @@ const AdminPage = () => {
     }
   };
 
-  const handleEdit = async (admin) => {
+  const handleEdit = async (admin: Admin) => {
     const { value: formValues } = await Swal.fire({
       title: "Edit Admin Info",
       html: `
@@ -98,10 +108,16 @@ const AdminPage = () => {
       showCancelButton: true,
       confirmButtonText: "Save Changes",
       preConfirm: () => {
-        const name = document.getElementById("swal-name").value.trim();
-        const email = document.getElementById("swal-email").value.trim();
-        const password = document.getElementById("swal-password").value.trim();
-        const confirm = document.getElementById("swal-confirm").value.trim();
+        const name = (document.getElementById("swal-name") as HTMLInputElement)
+          .value.trim();
+        const email = (document.getElementById("swal-email") as HTMLInputElement)
+          .value.trim();
+        const password = (
+          document.getElementById("swal-password") as HTMLInputElement
+        ).value.trim();
+        const confirm = (
+          document.getElementById("swal-confirm") as HTMLInputElement
+        ).value.trim();
 
         if (!name || !email) {
           Swal.showValidationMessage("Name and Email are required!");
@@ -119,10 +135,10 @@ const AdminPage = () => {
 
     if (formValues) {
       try {
-        await updateAdmin(token, admin._id, formValues);
+        await updateAdmin(admin._id, formValues);
         Swal.fire("Updated!", "Admin info has been updated.", "success");
         fetchAdmins();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error updating admin:", error);
         Swal.fire(
           "Error",
@@ -133,7 +149,7 @@ const AdminPage = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id: string) => {
     const confirm = await Swal.fire({
       title: "Are you sure?",
       text: "This admin account will be permanently deleted.",
@@ -147,10 +163,10 @@ const AdminPage = () => {
 
     if (confirm.isConfirmed) {
       try {
-        await deleteAdmin(token, id);
+        await deleteAdmin(id);
         Swal.fire("Deleted!", "Admin has been deleted.", "success");
         fetchAdmins();
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error deleting admin:", error);
         Swal.fire(
           "Error",
@@ -232,7 +248,11 @@ const AdminPage = () => {
                         className="flex items-center justify-center bg-blue-50 hover:bg-blue-100 rounded-full p-2 transition"
                         title="Edit Admin"
                       >
-                        <img src={Edit} alt="Edit icon" className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <img
+                          src={Edit}
+                          alt="Edit icon"
+                          className="h-5 w-5 sm:h-6 sm:w-6"
+                        />
                       </button>
 
                       <button
@@ -240,7 +260,11 @@ const AdminPage = () => {
                         className="flex items-center justify-center bg-red-50 hover:bg-red-100 rounded-full p-2 transition"
                         title="Delete Admin"
                       >
-                        <img src={Remove} alt="Delete icon" className="h-5 w-5 sm:h-6 sm:w-6" />
+                        <img
+                          src={Remove}
+                          alt="Delete icon"
+                          className="h-5 w-5 sm:h-6 sm:w-6"
+                        />
                       </button>
                     </div>
                   </td>
