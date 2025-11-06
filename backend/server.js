@@ -16,23 +16,18 @@ const app = express();
 
 // ✅ Explicitly define allowed origins
 const allowedOrigins = [
-  "https://barangay-locator-project.vercel.app", // your deployed frontend (Vercel)
-  "http://localhost:5173", // local React dev
-  "https://barangay-locator-project.onrender.com", // optional if frontend also hosted on Render
+  "https://barangay-locator-project.vercel.app", // ✅ your Vercel frontend (no trailing slash)
+  "http://localhost:5173", // ✅ local dev
 ];
 
-// ✅ CORS Configuration with better logging + dynamic handling
+// ✅ CORS Configuration with logging
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman, curl, or mobile)
-      if (!origin) {
-        console.log("🌐 No Origin (Postman or server request) — allowed");
-        return callback(null, true);
-      }
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
 
-      // Check if origin is allowed
-      if (allowedOrigins.some((url) => origin.startsWith(url))) {
+      if (allowedOrigins.includes(origin)) {
         console.log(`✅ CORS origin allowed: ${origin}`);
         callback(null, true);
       } else {
